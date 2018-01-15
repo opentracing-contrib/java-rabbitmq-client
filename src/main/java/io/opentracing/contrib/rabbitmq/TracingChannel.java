@@ -1,19 +1,37 @@
+/*
+ * Copyright 2017-2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package io.opentracing.contrib.rabbitmq;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.CancelCallback;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Command;
+import com.rabbitmq.client.ConfirmCallback;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.FlowListener;
+import com.rabbitmq.client.ConsumerShutdownSignalCallback;
+import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.Method;
+import com.rabbitmq.client.ReturnCallback;
 import com.rabbitmq.client.ReturnListener;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -21,6 +39,7 @@ import io.opentracing.tag.Tags;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
 
@@ -55,12 +74,6 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  @Deprecated
-  public boolean flowBlocked() {
-    return channel.flowBlocked();
-  }
-
-  @Override
   public void abort() throws IOException {
     channel.abort();
   }
@@ -76,6 +89,11 @@ public class TracingChannel implements Channel {
   }
 
   @Override
+  public ReturnListener addReturnListener(ReturnCallback returnCallback) {
+    return channel.addReturnListener(returnCallback);
+  }
+
+  @Override
   public boolean removeReturnListener(ReturnListener listener) {
     return channel.removeReturnListener(listener);
   }
@@ -86,26 +104,14 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  @Deprecated
-  public void addFlowListener(FlowListener listener) {
-    channel.addFlowListener(listener);
-  }
-
-  @Override
-  @Deprecated
-  public boolean removeFlowListener(FlowListener listener) {
-    return channel.removeFlowListener(listener);
-  }
-
-  @Override
-  @Deprecated
-  public void clearFlowListeners() {
-    channel.clearFlowListeners();
-  }
-
-  @Override
   public void addConfirmListener(ConfirmListener listener) {
     channel.addConfirmListener(listener);
+  }
+
+  @Override
+  public ConfirmListener addConfirmListener(ConfirmCallback confirmCallback,
+      ConfirmCallback confirmCallback1) {
+    return channel.addConfirmListener(confirmCallback, confirmCallback1);
   }
 
   @Override
@@ -159,8 +165,8 @@ public class TracingChannel implements Channel {
   public void basicPublish(String exchange, String routingKey, boolean mandatory, boolean immediate,
       AMQP.BasicProperties props, byte[] body) throws IOException {
 
-    try (ActiveSpan span = buildSpan(exchange, props)) {
-      AMQP.BasicProperties properties = inject(props, span);
+    try (Scope scope = buildSpan(exchange, props)) {
+      AMQP.BasicProperties properties = inject(props, scope.span());
       channel.basicPublish(exchange, routingKey, mandatory, immediate, properties, body);
     }
   }
@@ -384,8 +390,47 @@ public class TracingChannel implements Channel {
   }
 
   @Override
+  public String basicConsume(String s, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(s, deliverCallback, cancelCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel.basicConsume(s, deliverCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel.basicConsume(s, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
   public String basicConsume(String queue, boolean autoAck, Consumer callback) throws IOException {
     return basicConsume(queue, autoAck, "", false, false, null, callback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(s, b, deliverCallback, cancelCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel.basicConsume(s, b, deliverCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel
+        .basicConsume(s, b, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
   }
 
   @Override
@@ -395,9 +440,55 @@ public class TracingChannel implements Channel {
   }
 
   @Override
+  public String basicConsume(String s, boolean b,
+      Map<String, Object> map, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(s, b, map, deliverCallback, cancelCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b,
+      Map<String, Object> map, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel.basicConsume(s, b, map, deliverCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b,
+      Map<String, Object> map, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel
+        .basicConsume(s, b, map, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
   public String basicConsume(String queue, boolean autoAck, String consumerTag, Consumer callback)
       throws IOException {
     return basicConsume(queue, autoAck, consumerTag, false, false, null, callback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, String s1,
+      DeliverCallback deliverCallback,
+      CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(s, b, s1, deliverCallback, cancelCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, String s1,
+      DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel.basicConsume(s, b, s1, deliverCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, String s1,
+      DeliverCallback deliverCallback,
+      CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel
+        .basicConsume(s, b, s1, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
   }
 
   @Override
@@ -405,6 +496,30 @@ public class TracingChannel implements Channel {
       boolean exclusive, Map<String, Object> arguments, Consumer callback) throws IOException {
     return channel.basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
         new TracingConsumer(callback, tracer));
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2,
+      Map<String, Object> map, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(s, b, s1, b1, b2, map, deliverCallback, cancelCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2,
+      Map<String, Object> map, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel
+        .basicConsume(s, b, s1, b1, b2, map, deliverCallback, consumerShutdownSignalCallback);
+  }
+
+  @Override
+  public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2,
+      Map<String, Object> map, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+    return channel.basicConsume(s, b, s1, b1, b2, map, deliverCallback, cancelCallback,
+        consumerShutdownSignalCallback);
   }
 
   @Override
@@ -489,6 +604,12 @@ public class TracingChannel implements Channel {
   }
 
   @Override
+  public CompletableFuture<Command> asyncCompletableRpc(
+      Method method) throws IOException {
+    return channel.asyncCompletableRpc(method);
+  }
+
+  @Override
   public void addShutdownListener(ShutdownListener listener) {
     channel.addShutdownListener(listener);
   }
@@ -513,7 +634,7 @@ public class TracingChannel implements Channel {
     return channel.isOpen();
   }
 
-  private ActiveSpan buildSpan(String exchange, AMQP.BasicProperties props) {
+  private Scope buildSpan(String exchange, AMQP.BasicProperties props) {
     Tracer.SpanBuilder spanBuilder = tracer.buildSpan("send")
         .ignoreActiveSpan()
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER);
@@ -527,7 +648,7 @@ public class TracingChannel implements Channel {
     }
 
     if (spanContext == null) {
-      ActiveSpan parentSpan = tracer.activeSpan();
+      Span parentSpan = tracer.activeSpan();
       if (parentSpan != null) {
         spanContext = parentSpan.context();
       }
@@ -537,13 +658,13 @@ public class TracingChannel implements Channel {
       spanBuilder.asChildOf(spanContext);
     }
 
-    ActiveSpan span = spanBuilder.startActive();
-    SpanDecorator.onRequest(exchange, span);
+    Scope scope = spanBuilder.startActive(true);
+    SpanDecorator.onRequest(exchange, scope.span());
 
-    return span;
+    return scope;
   }
 
-  private AMQP.BasicProperties inject(AMQP.BasicProperties properties, ActiveSpan span) {
+  private AMQP.BasicProperties inject(AMQP.BasicProperties properties, Span span) {
 
     // Headers of AMQP.BasicProperties is unmodifiableMap therefore we build new AMQP.BasicProperties
     // with injected span context into headers
