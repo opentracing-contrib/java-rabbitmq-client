@@ -1,8 +1,22 @@
+/*
+ * Copyright 2017-2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package io.opentracing.contrib.rabbitmq;
 
 import com.rabbitmq.client.AMQP;
-import io.opentracing.ActiveSpan;
 import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -17,7 +31,7 @@ public class TracingUtils {
       return spanContext;
     }
 
-    ActiveSpan span = tracer.activeSpan();
+    Span span = tracer.activeSpan();
     if (span != null) {
       return span.context();
     }
@@ -25,13 +39,13 @@ public class TracingUtils {
   }
 
   static void buildAndFinishChildSpan(AMQP.BasicProperties props, Tracer tracer) {
-    ActiveSpan child = buildChildSpan(props, tracer);
+    Scope child = buildChildSpan(props, tracer);
     if (child != null) {
       child.close();
     }
   }
 
-  static ActiveSpan buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
+  static Scope buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
     SpanContext context = TracingUtils.extract(props, tracer);
     if (context != null) {
       Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
@@ -40,9 +54,9 @@ public class TracingUtils {
 
       spanBuilder.addReference(References.FOLLOWS_FROM, context);
 
-      ActiveSpan span = spanBuilder.startActive();
-      SpanDecorator.onResponse(span);
-      return span;
+      Scope scope = spanBuilder.startActive(true);
+      SpanDecorator.onResponse(scope.span());
+      return scope;
     }
 
     return null;
