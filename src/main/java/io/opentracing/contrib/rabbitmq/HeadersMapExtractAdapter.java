@@ -24,6 +24,9 @@ public class HeadersMapExtractAdapter implements TextMap {
   private final Map<String, String> map = new HashMap<>();
 
   public HeadersMapExtractAdapter(Map<String, Object> headers) {
+    if (headers == null) {
+      return;
+    }
     for (Map.Entry<String, Object> entry : headers.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
     }
