@@ -28,7 +28,6 @@ public class TracingConnectionFactory extends ConnectionFactory {
 
     public TracingConnectionFactory(Tracer tracer) {
         this.tracer = tracer;
-        setAutomaticRecoveryEnabled(false);
     }
 
     @Override
