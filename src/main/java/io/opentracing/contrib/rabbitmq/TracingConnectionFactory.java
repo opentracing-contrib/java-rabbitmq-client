@@ -24,22 +24,21 @@ import java.util.concurrent.TimeoutException;
 
 public class TracingConnectionFactory extends ConnectionFactory {
 
-    private final Tracer tracer;
+  private final Tracer tracer;
 
-    public TracingConnectionFactory(Tracer tracer) {
-        this.tracer = tracer;
-    }
+  public TracingConnectionFactory(Tracer tracer) {
+    this.tracer = tracer;
+  }
 
-    @Override
-    public Connection newConnection(
-            ExecutorService executor,
-            AddressResolver addressResolver,
-            String clientProvidedName
-    ) throws IOException, TimeoutException {
-        return new TracingConnection(
-                super.newConnection(executor, addressResolver, clientProvidedName),
-                tracer
-        );
-    }
-
+  @Override
+  public Connection newConnection(
+      ExecutorService executor,
+      AddressResolver addressResolver,
+      String clientProvidedName
+  ) throws IOException, TimeoutException {
+    return new TracingConnection(
+        super.newConnection(executor, addressResolver, clientProvidedName),
+        tracer
+    );
+  }
 }

@@ -33,6 +33,10 @@ GetResponse response = tracingChannel.basicGet(queueName, false);
 // Consume
 tracingChannel.basicConsume(...);
 
+// Factory
+ConnectionFactory factory = new TracingConnectionFactory(tracer);
+Connection connection = factory.newConnection();
+
 ```
 
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-rabbitmq-client.svg?branch=master
