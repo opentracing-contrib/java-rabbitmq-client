@@ -39,6 +39,10 @@ Connection connection = factory.newConnection();
 
 ```
 
+## License
+
+[Apache 2.0 License](./LICENSE).
+
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-rabbitmq-client.svg?branch=master
 [ci]: https://travis-ci.org/opentracing-contrib/java-rabbitmq-client
 [cov-img]: https://coveralls.io/repos/github/opentracing-contrib/java-rabbitmq-client/badge.svg?branch=master
