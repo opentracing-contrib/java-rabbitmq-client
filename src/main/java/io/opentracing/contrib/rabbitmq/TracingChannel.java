@@ -36,6 +36,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +52,13 @@ public class TracingChannel implements Channel {
   public TracingChannel(Channel channel, Tracer tracer) {
     this.channel = channel;
     this.tracer = tracer;
+  }
+
+  /**
+   * GlobalTracer is used to get tracer
+   */
+  public TracingChannel(Channel channel) {
+    this(channel, GlobalTracer.get());
   }
 
   @Override
