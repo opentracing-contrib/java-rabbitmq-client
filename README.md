@@ -21,6 +21,9 @@ pom.xml
 // Instantiate tracer
 Tracer tracer = ...
 
+// Optionally register tracer with GlobalTracer
+GlobalTracer.register(tracer);
+
 // Decorate RabbitMQ Channel with TracingChannel
 TracingChannel tracingChannel = new TracingChannel(channel, tracer);
 

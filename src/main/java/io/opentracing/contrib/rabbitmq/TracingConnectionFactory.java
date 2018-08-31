@@ -17,7 +17,7 @@ import com.rabbitmq.client.AddressResolver;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import io.opentracing.Tracer;
-
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
@@ -28,6 +28,13 @@ public class TracingConnectionFactory extends ConnectionFactory {
 
   public TracingConnectionFactory(Tracer tracer) {
     this.tracer = tracer;
+  }
+
+  /**
+   * GlobalTracer is used to get tracer
+   */
+  public TracingConnectionFactory() {
+    this(GlobalTracer.get());
   }
 
   @Override
