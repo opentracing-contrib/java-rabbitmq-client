@@ -1,21 +1,39 @@
 {
-  "name" : "EmbeddedBroker",
-  "defaultVirtualHost" : "default",
-  "modelVersion" : "1.0",
-  "storeVersion" : 1,
-  "authenticationproviders" : [ {
-    "name" : "passwordFile",
-    "path" : "${qpid.pass_file}",
-    "type" : "PlainPasswordFile"
-  } ],
-  "ports" : [ {
-    "name" : "AMQP",
-    "port" : "${qpid.amqp_port}",
-    "authenticationProvider" : "passwordFile"
-  } ],
-  "virtualhosts" : [ {
-    "name" : "default",
-    "storePath" : "${qpid.work_dir}/derbystore/default",
-    "storeType" : "DERBY"
-  } ]
+  "name": "EmbeddedBroker",
+  "modelVersion": "7.0",
+  "authenticationproviders": [
+    {
+      "name": "password",
+      "type": "Plain",
+      "secureOnlyMechanisms": [],
+      "users": [
+        {
+          "name": "guest",
+          "password": "guest",
+          "type": "managed"
+        }
+      ]
+    }
+  ],
+  "ports": [
+    {
+      "name": "AMQP",
+      "port": "${qpid.amqp_port}",
+      "authenticationProvider": "password",
+      "virtualhostaliases": [
+        {
+          "name": "defaultAlias",
+          "type": "defaultAlias"
+        }
+      ]
+    }
+  ],
+  "virtualhostnodes": [
+    {
+      "name": "default",
+      "defaultVirtualHostNode": "true",
+      "type": "Memory",
+      "virtualHostInitialConfiguration": "{\"type\": \"Memory\" }"
+    }
+  ]
 }
