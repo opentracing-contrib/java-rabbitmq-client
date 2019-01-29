@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 The OpenTracing Authors
+ * Copyright 2017-2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -21,12 +21,10 @@ import com.rabbitmq.client.ExceptionHandler;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.UnblockedCallback;
-
+import io.opentracing.Tracer;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
-
-import io.opentracing.Tracer;
 
 public class TracingConnection implements Connection {
 
@@ -135,7 +133,8 @@ public class TracingConnection implements Connection {
   }
 
   @Override
-  public BlockedListener addBlockedListener(BlockedCallback blockedCallback, UnblockedCallback unblockedCallback) {
+  public BlockedListener addBlockedListener(BlockedCallback blockedCallback,
+      UnblockedCallback unblockedCallback) {
     return connection.addBlockedListener(blockedCallback, unblockedCallback);
   }
 
