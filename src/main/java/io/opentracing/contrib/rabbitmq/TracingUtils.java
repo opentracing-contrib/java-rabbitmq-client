@@ -15,10 +15,10 @@ package io.opentracing.contrib.rabbitmq;
 
 import com.rabbitmq.client.AMQP;
 import io.opentracing.References;
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.noop.NoopSpan;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 
@@ -39,13 +39,13 @@ public class TracingUtils {
   }
 
   static void buildAndFinishChildSpan(AMQP.BasicProperties props, Tracer tracer) {
-    Scope child = buildChildSpan(props, tracer);
+    Span child = buildChildSpan(props, tracer);
     if (child != null) {
-      child.close();
+      child.finish();
     }
   }
 
-  static Scope buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
+  static Span buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
     SpanContext context = TracingUtils.extract(props, tracer);
     if (context != null) {
       Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
@@ -54,11 +54,11 @@ public class TracingUtils {
 
       spanBuilder.addReference(References.FOLLOWS_FROM, context);
 
-      Scope scope = spanBuilder.startActive(true);
-      SpanDecorator.onResponse(scope.span());
-      return scope;
+      Span span = spanBuilder.start();
+      SpanDecorator.onResponse(span);
+      return span;
     }
 
-    return null;
+    return NoopSpan.INSTANCE;
   }
 }

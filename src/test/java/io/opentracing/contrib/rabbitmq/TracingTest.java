@@ -29,7 +29,6 @@ import com.rabbitmq.client.GetResponse;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.ThreadLocalScopeManager;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -44,8 +43,7 @@ import org.junit.Test;
 public class TracingTest {
 
   private static EmbeddedAMQPBroker embeddedAMQPBroker;
-  private static final MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(),
-      MockTracer.Propagator.TEXT_MAP);
+  private static final MockTracer mockTracer = new MockTracer();
   private Channel channel;
   private Connection connection;
 
@@ -55,7 +53,7 @@ public class TracingTest {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
+  public static void afterClass() {
     if (embeddedAMQPBroker != null) {
       embeddedAMQPBroker.shutdown();
     }

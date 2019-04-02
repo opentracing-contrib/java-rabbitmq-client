@@ -18,6 +18,7 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.io.IOException;
 
@@ -62,14 +63,12 @@ public class TracingConsumer implements Consumer {
   @Override
   public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
       byte[] body) throws IOException {
-    Scope child = TracingUtils.buildChildSpan(properties, tracer);
+    Span child = TracingUtils.buildChildSpan(properties, tracer);
 
-    try {
+    try (Scope ignored = tracer.activateSpan(child)) {
       consumer.handleDelivery(consumerTag, envelope, properties, body);
     } finally {
-      if (child != null) {
-        child.close();
-      }
+      child.finish();
     }
   }
 }

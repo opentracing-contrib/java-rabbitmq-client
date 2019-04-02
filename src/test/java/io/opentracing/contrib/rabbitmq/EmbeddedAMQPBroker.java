@@ -14,7 +14,6 @@
 package io.opentracing.contrib.rabbitmq;
 
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.file.Files;
@@ -24,12 +23,12 @@ import javax.net.ServerSocketFactory;
 import org.apache.qpid.server.SystemLauncher;
 
 
-public class EmbeddedAMQPBroker {
+class EmbeddedAMQPBroker {
 
   private int brokerPort;
   private final SystemLauncher broker = new SystemLauncher();
 
-  public EmbeddedAMQPBroker() throws Exception {
+  EmbeddedAMQPBroker() throws Exception {
     this.brokerPort = findAvailableTcpPort();
     final String configFileName = "qpid-config.json";
     Map<String, Object> brokerOptions = new HashMap<>();
@@ -43,11 +42,11 @@ public class EmbeddedAMQPBroker {
     broker.startup(brokerOptions);
   }
 
-  public void shutdown() {
+  void shutdown() {
     broker.shutdown();
   }
 
-  private String findResourcePath(final String file) throws IOException {
+  private String findResourcePath(final String file) {
     return "src/test/resources/" + file;
   }
 
@@ -72,7 +71,7 @@ public class EmbeddedAMQPBroker {
     }
   }
 
-  public int getBrokerPort() {
+  int getBrokerPort() {
     return brokerPort;
   }
 }
