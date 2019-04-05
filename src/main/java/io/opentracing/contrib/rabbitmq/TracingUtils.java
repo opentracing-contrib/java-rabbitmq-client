@@ -21,6 +21,8 @@ import io.opentracing.Tracer;
 import io.opentracing.noop.NoopSpan;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TracingUtils {
 
@@ -38,14 +40,14 @@ public class TracingUtils {
     return null;
   }
 
-  static void buildAndFinishChildSpan(AMQP.BasicProperties props, Tracer tracer) {
+  public static void buildAndFinishChildSpan(AMQP.BasicProperties props, Tracer tracer) {
     Span child = buildChildSpan(props, tracer);
     if (child != null) {
       child.finish();
     }
   }
 
-  static Span buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
+  public static Span buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
     SpanContext context = TracingUtils.extract(props, tracer);
     if (context != null) {
       Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
@@ -60,5 +62,57 @@ public class TracingUtils {
     }
 
     return NoopSpan.INSTANCE;
+  }
+
+  public static Span buildSpan(String exchange, AMQP.BasicProperties props, Tracer tracer) {
+    Tracer.SpanBuilder spanBuilder = tracer.buildSpan("send")
+        .ignoreActiveSpan()
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER);
+
+    SpanContext spanContext = null;
+
+    if (props != null && props.getHeaders() != null) {
+      // just in case if span context was injected manually to props in basicPublish
+      spanContext = tracer.extract(Format.Builtin.TEXT_MAP,
+          new HeadersMapExtractAdapter(props.getHeaders()));
+    }
+
+    if (spanContext == null) {
+      Span parentSpan = tracer.activeSpan();
+      if (parentSpan != null) {
+        spanContext = parentSpan.context();
+      }
+    }
+
+    if (spanContext != null) {
+      spanBuilder.asChildOf(spanContext);
+    }
+
+    Span span = spanBuilder.start();
+    SpanDecorator.onRequest(exchange, span);
+
+    return span;
+  }
+
+  public static AMQP.BasicProperties inject(AMQP.BasicProperties properties, Span span,
+      Tracer tracer) {
+
+    // Headers of AMQP.BasicProperties is unmodifiableMap therefore we build new AMQP.BasicProperties
+    // with injected span context into headers
+    Map<String, Object> headers = new HashMap<>();
+
+    tracer.inject(span.context(), Format.Builtin.TEXT_MAP, new HeadersMapInjectAdapter(headers));
+
+    if (properties == null) {
+      return new AMQP.BasicProperties().builder().headers(headers).build();
+    }
+
+    if (properties.getHeaders() != null) {
+      headers.putAll(properties.getHeaders());
+    }
+
+    return properties.builder()
+        .headers(headers)
+        .build();
   }
 }
