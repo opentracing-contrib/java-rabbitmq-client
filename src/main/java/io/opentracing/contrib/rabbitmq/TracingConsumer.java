@@ -65,7 +65,7 @@ public class TracingConsumer implements Consumer {
       byte[] body) throws IOException {
     Span child = TracingUtils.buildChildSpan(properties, tracer);
 
-    try (Scope ignored = tracer.scopeManager().activate(child, false)) {
+    try (Scope ignored = tracer.scopeManager().activate(child)) {
       consumer.handleDelivery(consumerTag, envelope, properties, body);
     } finally {
       child.finish();

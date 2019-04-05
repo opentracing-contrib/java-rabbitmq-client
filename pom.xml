@@ -18,7 +18,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib</groupId>
   <artifactId>opentracing-rabbitmq-client</artifactId>
-  <version>0.0.9-SNAPSHOT</version>
+  <version>0.1.1-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>OpenTracing Instrumentation for RabbitMQ Client</description>
@@ -60,7 +60,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
 
-    <opentracing.version>0.31.0</opentracing.version>
+    <opentracing.version>0.32.0</opentracing.version>
     <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
     <qpid-broker.version>7.1.0</qpid-broker.version>
