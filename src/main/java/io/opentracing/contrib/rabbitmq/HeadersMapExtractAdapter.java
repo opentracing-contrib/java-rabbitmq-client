@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import static java.lang.String.valueOf;
 
 public class HeadersMapExtractAdapter implements TextMap {
 
@@ -28,7 +29,7 @@ public class HeadersMapExtractAdapter implements TextMap {
       return;
     }
     for (Map.Entry<String, Object> entry : headers.entrySet()) {
-      map.put(entry.getKey(), entry.getValue().toString());
+      map.put(entry.getKey(), valueOf(entry.getValue()));
     }
   }
 
