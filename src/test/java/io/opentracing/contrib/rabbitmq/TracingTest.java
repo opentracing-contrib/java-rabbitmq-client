@@ -130,6 +130,7 @@ public class TracingTest {
           throws IOException {
         long deliveryTag = envelope.getDeliveryTag();
         channel.basicAck(deliveryTag, false);
+        assertNotNull(mockTracer.activeSpan());
         latch.countDown();
       }
     });
@@ -160,7 +161,10 @@ public class TracingTest {
 
     final CountDownLatch latch = new CountDownLatch(1);
     channel.basicConsume(queueName, false,
-        (consumerTag, message) -> latch.countDown(),
+        (consumerTag, message) -> {
+          assertNotNull(mockTracer.activeSpan());
+          latch.countDown();
+        },
         consumerTag -> {
         });
 
