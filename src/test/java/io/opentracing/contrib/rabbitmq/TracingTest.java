@@ -14,6 +14,8 @@
 package io.opentracing.contrib.rabbitmq;
 
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,6 +33,7 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -133,13 +136,38 @@ public class TracingTest {
 
     latch.await(30, TimeUnit.SECONDS);
 
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(), equalTo(2));
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    int tries = 10;
-    while (tries > 0 && finishedSpans.size() < 2) {
-      TimeUnit.SECONDS.sleep(1L);
-      finishedSpans = mockTracer.finishedSpans();
-      tries--;
-    }
+
+    assertEquals(2, finishedSpans.size());
+    checkSpans(finishedSpans);
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
+  public void basicConsumeWithCallback() throws Exception {
+    String exchangeName = "basicConsumeExchange";
+    String queueName = "basicConsumeQueue";
+    String routingKey = "#";
+
+    channel.exchangeDeclare(exchangeName, "direct", true);
+    channel.queueDeclare(queueName, true, false, false, null);
+    channel.queueBind(queueName, exchangeName, routingKey);
+
+    byte[] messageBodyBytes = "Hello, world!".getBytes();
+
+    channel.basicPublish(exchangeName, routingKey, null, messageBodyBytes);
+
+    final CountDownLatch latch = new CountDownLatch(1);
+    channel.basicConsume(queueName, false,
+        (consumerTag, message) -> latch.countDown(),
+        consumerTag -> {
+        });
+
+    latch.await(30, TimeUnit.SECONDS);
+
+    await().atMost(15, TimeUnit.SECONDS).until(reportedSpansSize(), equalTo(2));
+    List<MockSpan> finishedSpans = mockTracer.finishedSpans();
 
     assertEquals(2, finishedSpans.size());
     checkSpans(finishedSpans);
@@ -156,6 +184,10 @@ public class TracingTest {
       assertTrue(operationName.equals("send")
           || operationName.equals("receive"));
     }
+  }
+
+  private Callable<Integer> reportedSpansSize() {
+    return () -> mockTracer.finishedSpans().size();
   }
 
 }

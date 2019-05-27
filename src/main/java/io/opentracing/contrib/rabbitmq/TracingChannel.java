@@ -400,22 +400,26 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  public String basicConsume(String s, DeliverCallback deliverCallback,
+  public String basicConsume(String queue, DeliverCallback deliverCallback,
       CancelCallback cancelCallback) throws IOException {
-    return channel.basicConsume(s, deliverCallback, cancelCallback);
+    return channel
+        .basicConsume(queue, new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
   }
 
   @Override
-  public String basicConsume(String s, DeliverCallback deliverCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
-    return channel.basicConsume(s, deliverCallback, consumerShutdownSignalCallback);
+  public String basicConsume(String queue, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
+    return channel.basicConsume(queue, new TracingDeliverCallback(deliverCallback, tracer),
+        shutdownSignalCallback);
   }
 
   @Override
-  public String basicConsume(String s, DeliverCallback deliverCallback,
-      CancelCallback cancelCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
-    return channel.basicConsume(s, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
+  public String basicConsume(String queue, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
+      throws IOException {
+    return channel
+        .basicConsume(queue, new TracingDeliverCallback(deliverCallback, tracer), cancelCallback,
+            shutdownSignalCallback);
   }
 
   @Override
@@ -424,23 +428,26 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
+  public String basicConsume(String queue, boolean autoAck, DeliverCallback deliverCallback,
       CancelCallback cancelCallback) throws IOException {
-    return channel.basicConsume(s, b, deliverCallback, cancelCallback);
+    return channel.basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, tracer),
+        cancelCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
-    return channel.basicConsume(s, b, deliverCallback, consumerShutdownSignalCallback);
+  public String basicConsume(String queue, boolean autoAck, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
+    return channel.basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, tracer),
+        shutdownSignalCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b, DeliverCallback deliverCallback,
-      CancelCallback cancelCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+  public String basicConsume(String queue, boolean autoAck, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
+      throws IOException {
     return channel
-        .basicConsume(s, b, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
+        .basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, tracer),
+            cancelCallback, shutdownSignalCallback);
   }
 
   @Override
@@ -450,26 +457,28 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  public String basicConsume(String s, boolean b,
-      Map<String, Object> map, DeliverCallback deliverCallback,
-      CancelCallback cancelCallback) throws IOException {
-    return channel.basicConsume(s, b, map, deliverCallback, cancelCallback);
+  public String basicConsume(String queue, boolean autoAck, Map<String, Object> arguments,
+      DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(queue, autoAck, arguments,
+        new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b,
-      Map<String, Object> map, DeliverCallback deliverCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
-    return channel.basicConsume(s, b, map, deliverCallback, consumerShutdownSignalCallback);
+  public String basicConsume(String queue, boolean autoAck, Map<String, Object> arguments,
+      DeliverCallback deliverCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
+      throws IOException {
+    return channel.basicConsume(queue, autoAck, arguments,
+        new TracingDeliverCallback(deliverCallback, tracer), shutdownSignalCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b,
-      Map<String, Object> map, DeliverCallback deliverCallback,
-      CancelCallback cancelCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+  public String basicConsume(String queue, boolean autoAck, Map<String, Object> arguments,
+      DeliverCallback deliverCallback, CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
     return channel
-        .basicConsume(s, b, map, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
+        .basicConsume(queue, autoAck, arguments,
+            new TracingDeliverCallback(deliverCallback, tracer), cancelCallback,
+            shutdownSignalCallback);
   }
 
   @Override
@@ -479,26 +488,28 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  public String basicConsume(String s, boolean b, String s1,
-      DeliverCallback deliverCallback,
-      CancelCallback cancelCallback) throws IOException {
-    return channel.basicConsume(s, b, s1, deliverCallback, cancelCallback);
+  public String basicConsume(String queue, boolean autoAck, String consumerTag,
+      DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
+    return channel.basicConsume(queue, autoAck, consumerTag,
+        new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b, String s1,
-      DeliverCallback deliverCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
-    return channel.basicConsume(s, b, s1, deliverCallback, consumerShutdownSignalCallback);
+  public String basicConsume(String queue, boolean autoAck, String consumerTag,
+      DeliverCallback deliverCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
+      throws IOException {
+    return channel.basicConsume(queue, autoAck, consumerTag,
+        new TracingDeliverCallback(deliverCallback, tracer), shutdownSignalCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b, String s1,
-      DeliverCallback deliverCallback,
-      CancelCallback cancelCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+  public String basicConsume(String queue, boolean autoAck, String consumerTag,
+      DeliverCallback deliverCallback, CancelCallback cancelCallback,
+      ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
     return channel
-        .basicConsume(s, b, s1, deliverCallback, cancelCallback, consumerShutdownSignalCallback);
+        .basicConsume(queue, autoAck, consumerTag,
+            new TracingDeliverCallback(deliverCallback, tracer), cancelCallback,
+            shutdownSignalCallback);
   }
 
   @Override
@@ -509,27 +520,31 @@ public class TracingChannel implements Channel {
   }
 
   @Override
-  public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2,
-      Map<String, Object> map, DeliverCallback deliverCallback,
+  public String basicConsume(String queue, boolean autoAck, String consumerTag, boolean noLocal,
+      boolean exclusive, Map<String, Object> arguments, DeliverCallback deliverCallback,
       CancelCallback cancelCallback) throws IOException {
-    return channel.basicConsume(s, b, s1, b1, b2, map, deliverCallback, cancelCallback);
+    return channel.basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
+        new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2,
-      Map<String, Object> map, DeliverCallback deliverCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
+  public String basicConsume(String queue, boolean autoAck, String consumerTag, boolean noLocal,
+      boolean exclusive, Map<String, Object> arguments, DeliverCallback deliverCallback,
+      ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
     return channel
-        .basicConsume(s, b, s1, b1, b2, map, deliverCallback, consumerShutdownSignalCallback);
+        .basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
+            new TracingDeliverCallback(deliverCallback, tracer), shutdownSignalCallback);
   }
 
   @Override
-  public String basicConsume(String s, boolean b, String s1, boolean b1, boolean b2,
-      Map<String, Object> map, DeliverCallback deliverCallback,
-      CancelCallback cancelCallback,
-      ConsumerShutdownSignalCallback consumerShutdownSignalCallback) throws IOException {
-    return channel.basicConsume(s, b, s1, b1, b2, map, deliverCallback, cancelCallback,
-        consumerShutdownSignalCallback);
+  public String basicConsume(String queue, boolean autoAck, String consumerTag, boolean noLocal,
+      boolean exclusive, Map<String, Object> arguments, DeliverCallback deliverCallback,
+      CancelCallback cancelCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
+      throws IOException {
+    return channel
+        .basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
+            new TracingDeliverCallback(deliverCallback, tracer),
+            cancelCallback, shutdownSignalCallback);
   }
 
   @Override
