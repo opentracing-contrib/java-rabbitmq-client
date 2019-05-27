@@ -22,16 +22,18 @@ import java.io.IOException;
 
 public class TracingDeliverCallback implements DeliverCallback {
   private final DeliverCallback deliverCallback;
+  private final String queue;
   private final Tracer tracer;
 
-  public TracingDeliverCallback(DeliverCallback deliverCallback, Tracer tracer) {
+  public TracingDeliverCallback(DeliverCallback deliverCallback, String queue, Tracer tracer) {
     this.deliverCallback = deliverCallback;
+    this.queue = queue;
     this.tracer = tracer;
   }
 
   @Override
   public void handle(String consumerTag, Delivery message) throws IOException {
-    Span child = TracingUtils.buildChildSpan(message.getProperties(), tracer);
+    Span child = TracingUtils.buildChildSpan(message.getProperties(), queue, tracer);
     try (Scope ignored = tracer.scopeManager().activate(child)) {
       deliverCallback.handle(consumerTag, message);
     } finally {

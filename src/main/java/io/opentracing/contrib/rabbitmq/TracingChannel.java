@@ -375,7 +375,7 @@ public class TracingChannel implements Channel {
   @Override
   public GetResponse basicGet(String queue, boolean autoAck) throws IOException {
     GetResponse response = channel.basicGet(queue, autoAck);
-    TracingUtils.buildAndFinishChildSpan(response.getProps(), tracer);
+    TracingUtils.buildAndFinishChildSpan(response.getProps(), queue, tracer);
     return response;
   }
 
@@ -403,13 +403,14 @@ public class TracingChannel implements Channel {
   public String basicConsume(String queue, DeliverCallback deliverCallback,
       CancelCallback cancelCallback) throws IOException {
     return channel
-        .basicConsume(queue, new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
+        .basicConsume(queue, new TracingDeliverCallback(deliverCallback, queue, tracer),
+            cancelCallback);
   }
 
   @Override
   public String basicConsume(String queue, DeliverCallback deliverCallback,
       ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
-    return channel.basicConsume(queue, new TracingDeliverCallback(deliverCallback, tracer),
+    return channel.basicConsume(queue, new TracingDeliverCallback(deliverCallback, queue, tracer),
         shutdownSignalCallback);
   }
 
@@ -418,7 +419,8 @@ public class TracingChannel implements Channel {
       CancelCallback cancelCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
       throws IOException {
     return channel
-        .basicConsume(queue, new TracingDeliverCallback(deliverCallback, tracer), cancelCallback,
+        .basicConsume(queue, new TracingDeliverCallback(deliverCallback, queue, tracer),
+            cancelCallback,
             shutdownSignalCallback);
   }
 
@@ -430,15 +432,17 @@ public class TracingChannel implements Channel {
   @Override
   public String basicConsume(String queue, boolean autoAck, DeliverCallback deliverCallback,
       CancelCallback cancelCallback) throws IOException {
-    return channel.basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, tracer),
-        cancelCallback);
+    return channel
+        .basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, queue, tracer),
+            cancelCallback);
   }
 
   @Override
   public String basicConsume(String queue, boolean autoAck, DeliverCallback deliverCallback,
       ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
-    return channel.basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, tracer),
-        shutdownSignalCallback);
+    return channel
+        .basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, queue, tracer),
+            shutdownSignalCallback);
   }
 
   @Override
@@ -446,7 +450,7 @@ public class TracingChannel implements Channel {
       CancelCallback cancelCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
       throws IOException {
     return channel
-        .basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, tracer),
+        .basicConsume(queue, autoAck, new TracingDeliverCallback(deliverCallback, queue, tracer),
             cancelCallback, shutdownSignalCallback);
   }
 
@@ -460,7 +464,7 @@ public class TracingChannel implements Channel {
   public String basicConsume(String queue, boolean autoAck, Map<String, Object> arguments,
       DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
     return channel.basicConsume(queue, autoAck, arguments,
-        new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
+        new TracingDeliverCallback(deliverCallback, queue, tracer), cancelCallback);
   }
 
   @Override
@@ -468,7 +472,7 @@ public class TracingChannel implements Channel {
       DeliverCallback deliverCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
       throws IOException {
     return channel.basicConsume(queue, autoAck, arguments,
-        new TracingDeliverCallback(deliverCallback, tracer), shutdownSignalCallback);
+        new TracingDeliverCallback(deliverCallback, queue, tracer), shutdownSignalCallback);
   }
 
   @Override
@@ -477,7 +481,7 @@ public class TracingChannel implements Channel {
       ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
     return channel
         .basicConsume(queue, autoAck, arguments,
-            new TracingDeliverCallback(deliverCallback, tracer), cancelCallback,
+            new TracingDeliverCallback(deliverCallback, queue, tracer), cancelCallback,
             shutdownSignalCallback);
   }
 
@@ -491,7 +495,7 @@ public class TracingChannel implements Channel {
   public String basicConsume(String queue, boolean autoAck, String consumerTag,
       DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
     return channel.basicConsume(queue, autoAck, consumerTag,
-        new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
+        new TracingDeliverCallback(deliverCallback, queue, tracer), cancelCallback);
   }
 
   @Override
@@ -499,7 +503,7 @@ public class TracingChannel implements Channel {
       DeliverCallback deliverCallback, ConsumerShutdownSignalCallback shutdownSignalCallback)
       throws IOException {
     return channel.basicConsume(queue, autoAck, consumerTag,
-        new TracingDeliverCallback(deliverCallback, tracer), shutdownSignalCallback);
+        new TracingDeliverCallback(deliverCallback, queue, tracer), shutdownSignalCallback);
   }
 
   @Override
@@ -508,7 +512,7 @@ public class TracingChannel implements Channel {
       ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
     return channel
         .basicConsume(queue, autoAck, consumerTag,
-            new TracingDeliverCallback(deliverCallback, tracer), cancelCallback,
+            new TracingDeliverCallback(deliverCallback, queue, tracer), cancelCallback,
             shutdownSignalCallback);
   }
 
@@ -516,7 +520,7 @@ public class TracingChannel implements Channel {
   public String basicConsume(String queue, boolean autoAck, String consumerTag, boolean noLocal,
       boolean exclusive, Map<String, Object> arguments, Consumer callback) throws IOException {
     return channel.basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
-        new TracingConsumer(callback, tracer));
+        new TracingConsumer(callback, queue, tracer));
   }
 
   @Override
@@ -524,7 +528,7 @@ public class TracingChannel implements Channel {
       boolean exclusive, Map<String, Object> arguments, DeliverCallback deliverCallback,
       CancelCallback cancelCallback) throws IOException {
     return channel.basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
-        new TracingDeliverCallback(deliverCallback, tracer), cancelCallback);
+        new TracingDeliverCallback(deliverCallback, queue, tracer), cancelCallback);
   }
 
   @Override
@@ -533,7 +537,7 @@ public class TracingChannel implements Channel {
       ConsumerShutdownSignalCallback shutdownSignalCallback) throws IOException {
     return channel
         .basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
-            new TracingDeliverCallback(deliverCallback, tracer), shutdownSignalCallback);
+            new TracingDeliverCallback(deliverCallback, queue, tracer), shutdownSignalCallback);
   }
 
   @Override
@@ -543,7 +547,7 @@ public class TracingChannel implements Channel {
       throws IOException {
     return channel
         .basicConsume(queue, autoAck, consumerTag, noLocal, exclusive, arguments,
-            new TracingDeliverCallback(deliverCallback, tracer),
+            new TracingDeliverCallback(deliverCallback, queue, tracer),
             cancelCallback, shutdownSignalCallback);
   }
 
