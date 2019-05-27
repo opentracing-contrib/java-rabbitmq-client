@@ -40,19 +40,21 @@ public class TracingUtils {
     return null;
   }
 
-  public static void buildAndFinishChildSpan(AMQP.BasicProperties props, Tracer tracer) {
-    Span child = buildChildSpan(props, tracer);
+  public static void buildAndFinishChildSpan(AMQP.BasicProperties props, String queue,
+      Tracer tracer) {
+    Span child = buildChildSpan(props, queue, tracer);
     if (child != null) {
       child.finish();
     }
   }
 
-  public static Span buildChildSpan(AMQP.BasicProperties props, Tracer tracer) {
+  public static Span buildChildSpan(AMQP.BasicProperties props, String queue, Tracer tracer) {
     SpanContext context = TracingUtils.extract(props, tracer);
     if (context != null) {
       Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
           .ignoreActiveSpan()
-          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CONSUMER);
+          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CONSUMER)
+          .withTag("queue", queue);
 
       spanBuilder.addReference(References.FOLLOWS_FROM, context);
 
@@ -64,10 +66,11 @@ public class TracingUtils {
     return NoopSpan.INSTANCE;
   }
 
-  public static Span buildSpan(String exchange, AMQP.BasicProperties props, Tracer tracer) {
+  public static Span buildSpan(String exchange, String routingKey, AMQP.BasicProperties props, Tracer tracer) {
     Tracer.SpanBuilder spanBuilder = tracer.buildSpan("send")
         .ignoreActiveSpan()
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER);
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER)
+        .withTag("routingKey", routingKey);
 
     SpanContext spanContext = null;
 

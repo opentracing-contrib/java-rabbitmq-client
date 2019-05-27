@@ -13,12 +13,12 @@
  */
 package io.opentracing.contrib.rabbitmq;
 
+import static java.lang.String.valueOf;
+
 import io.opentracing.propagation.TextMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import static java.lang.String.valueOf;
 
 public class HeadersMapExtractAdapter implements TextMap {
 
