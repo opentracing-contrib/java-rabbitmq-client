@@ -172,7 +172,7 @@ public class TracingChannel implements Channel {
   public void basicPublish(String exchange, String routingKey, boolean mandatory, boolean immediate,
       AMQP.BasicProperties props, byte[] body) throws IOException {
 
-    Span span = buildSpan(exchange, props, tracer);
+    Span span = buildSpan(exchange, routingKey, props, tracer);
     try (Scope ignored = tracer.scopeManager().activate(span)) {
       AMQP.BasicProperties properties = inject(props, span, tracer);
       channel.basicPublish(exchange, routingKey, mandatory, immediate, properties, body);

@@ -66,10 +66,11 @@ public class TracingUtils {
     return NoopSpan.INSTANCE;
   }
 
-  public static Span buildSpan(String exchange, AMQP.BasicProperties props, Tracer tracer) {
+  public static Span buildSpan(String exchange, String routingKey, AMQP.BasicProperties props, Tracer tracer) {
     Tracer.SpanBuilder spanBuilder = tracer.buildSpan("send")
         .ignoreActiveSpan()
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER);
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER)
+        .withTag("routingKey", routingKey);
 
     SpanContext spanContext = null;
 
