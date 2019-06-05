@@ -20,6 +20,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopSpan;
 import io.opentracing.propagation.Format;
+import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,13 +61,20 @@ public class TracingUtils {
 
       Span span = spanBuilder.start();
       SpanDecorator.onResponse(span);
+
+      if (props.getHeaders() != null) {
+        tracer.inject(span.context(), Builtin.TEXT_MAP,
+            new HeadersMapInjectAdapter(props.getHeaders()));
+      }
+
       return span;
     }
 
     return NoopSpan.INSTANCE;
   }
 
-  public static Span buildSpan(String exchange, String routingKey, AMQP.BasicProperties props, Tracer tracer) {
+  public static Span buildSpan(String exchange, String routingKey, AMQP.BasicProperties props,
+      Tracer tracer) {
     Tracer.SpanBuilder spanBuilder = tracer.buildSpan("send")
         .ignoreActiveSpan()
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_PRODUCER)
