@@ -375,7 +375,9 @@ public class TracingChannel implements Channel {
   @Override
   public GetResponse basicGet(String queue, boolean autoAck) throws IOException {
     GetResponse response = channel.basicGet(queue, autoAck);
-    TracingUtils.buildAndFinishChildSpan(response.getProps(), queue, tracer);
+    if (response != null) {
+      TracingUtils.buildAndFinishChildSpan(response.getProps(), queue, tracer);
+    }
     return response;
   }
 
