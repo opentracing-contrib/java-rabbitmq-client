@@ -54,8 +54,11 @@ public class TracingUtils {
     if (context != null) {
       Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
           .ignoreActiveSpan()
-          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CONSUMER)
-          .withTag("queue", queue);
+          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CONSUMER);
+
+      if (queue != null) {
+        spanBuilder.withTag("queue", queue);
+      }
 
       spanBuilder.addReference(References.FOLLOWS_FROM, context);
 
