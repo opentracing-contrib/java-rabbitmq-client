@@ -65,9 +65,13 @@ public class TracingUtils {
       Span span = spanBuilder.start();
       SpanDecorator.onResponse(span);
 
-      if (props.getHeaders() != null) {
-        tracer.inject(span.context(), Builtin.TEXT_MAP,
-            new HeadersMapInjectAdapter(props.getHeaders()));
+      try {
+        if (props.getHeaders() != null) {
+          tracer.inject(span.context(), Builtin.TEXT_MAP,
+              new HeadersMapInjectAdapter(props.getHeaders()));
+        }
+      } catch (Exception e) {
+        // ignore. Waiting for a proper fix.
       }
 
       return span;
