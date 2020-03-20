@@ -28,11 +28,15 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -176,6 +180,19 @@ public class TracingTest {
     assertEquals(2, finishedSpans.size());
     checkSpans(finishedSpans);
     assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
+  public void immutableAmqProperties() {
+    Map<String, Object> headers = Collections.singletonMap("test", "test");
+    //just emulate a context is present
+    Span span = mockTracer.buildSpan("test").start();
+    try (Scope ignored = mockTracer.activateSpan(span)) {
+      Span child = TracingUtils.buildChildSpan(new AMQP.BasicProperties().builder().headers(headers).build(),
+              "test", mockTracer);
+      assertNotNull(child);
+    }
+    span.finish();
   }
 
   private void checkSpans(List<MockSpan> mockSpans) {
