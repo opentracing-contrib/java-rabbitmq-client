@@ -18,7 +18,6 @@ import io.opentracing.References;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.noop.NoopSpan;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.tag.Tags;
@@ -50,34 +49,31 @@ public class TracingUtils {
   }
 
   public static Span buildChildSpan(AMQP.BasicProperties props, String queue, Tracer tracer) {
-    SpanContext context = TracingUtils.extract(props, tracer);
-    if (context != null) {
-      Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
-          .ignoreActiveSpan()
-          .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CONSUMER);
+    Tracer.SpanBuilder spanBuilder = tracer.buildSpan("receive")
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CONSUMER);
 
-      if (queue != null) {
-        spanBuilder.withTag("queue", queue);
-      }
-
-      spanBuilder.addReference(References.FOLLOWS_FROM, context);
-
-      Span span = spanBuilder.start();
-      SpanDecorator.onResponse(span);
-
-      try {
-        if (props.getHeaders() != null) {
-          tracer.inject(span.context(), Builtin.TEXT_MAP,
-              new HeadersMapInjectAdapter(props.getHeaders()));
-        }
-      } catch (Exception e) {
-        // ignore. Waiting for a proper fix.
-      }
-
-      return span;
+    if (queue != null) {
+      spanBuilder.withTag("queue", queue);
     }
 
-    return NoopSpan.INSTANCE;
+    SpanContext parentContext = TracingUtils.extract(props, tracer);
+    if (parentContext != null) {
+      spanBuilder.addReference(References.FOLLOWS_FROM, parentContext);
+    }
+
+    Span span = spanBuilder.start();
+    SpanDecorator.onResponse(span);
+
+    try {
+      if (props.getHeaders() != null) {
+        tracer.inject(span.context(), Builtin.TEXT_MAP,
+            new HeadersMapInjectAdapter(props.getHeaders()));
+      }
+    } catch (Exception e) {
+      // Ignore. Headers can be immutable. Waiting for a proper fix.
+    }
+
+    return span;
   }
 
   public static Span buildSpan(String exchange, String routingKey, AMQP.BasicProperties props,
