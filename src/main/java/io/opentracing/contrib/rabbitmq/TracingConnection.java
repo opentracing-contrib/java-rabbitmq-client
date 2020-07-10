@@ -79,12 +79,14 @@ public class TracingConnection implements Connection {
 
   @Override
   public Channel createChannel() throws IOException {
-    return new TracingChannel(connection.createChannel(), tracer);
+    Channel channel = connection.createChannel();
+    return channel != null ? new TracingChannel(channel, tracer) : null;
   }
 
   @Override
   public Channel createChannel(int channelNumber) throws IOException {
-    return new TracingChannel(connection.createChannel(channelNumber), tracer);
+    Channel channel = connection.createChannel(channelNumber);
+    return channel != null ? new TracingChannel(channel, tracer) : null;
   }
 
   @Override
